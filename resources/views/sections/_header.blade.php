@@ -14,7 +14,7 @@
             <li><a href="#instalaciones" class="hover:text-green-300 transition-colors block py-2 px-4 md:p-0">Instalaciones</a></li>
             <li><a href="#contacto" class="hover:text-green-300 transition-colors block py-2 px-4 md:p-0">Contacto</a></li>
             <li>
-                <a href="{{ route('admin.login') }}" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full shadow-md transition-colors block text-center mt-2 md:mt-0">
+                <a href="{{ route('login') }}" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full shadow-md transition-colors block text-center mt-2 md:mt-0">
                     Iniciar Sesión
                 </a>
             </li>
