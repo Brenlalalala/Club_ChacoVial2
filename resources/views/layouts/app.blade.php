@@ -12,13 +12,13 @@
 </head>
 <body class="bg-gray-100 font-sans">
     
-    @include('components._header')
+    @include('sections._header')
 
     <main class="container mx-auto p-4">
         @yield('content')
     </main>
 
-    @include('components._footer')
+    @include('sections._footer')
         <a href="#" id="scroll-to-top" class="fixed bottom-6 right-6 p-4 bg-indigo-600 text-white rounded-full shadow-lg opacity-0 invisible transition-all duration-300 ease-in-out z-50">
             <i class="fas fa-arrow-up"></i>
         </a>

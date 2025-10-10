@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-    @include('components._hero')
-    @include('components._about')
-    @include('components._facilities')
-    @include('components._activities')
-    @include('components._contact')
+    @include('sections._hero')
+    @include('sections._about')
+    @include('sections._facilities')
+    @include('sections._activities')
+    @include('sections._contact')
     @endsection
