@@ -1,22 +1,20 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-// Ruta para mostrar el formulario de reservas
-Route::get('/reservations', function () {
-    return view('reservations');
-})->name('reservations');
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-// Ruta para procesar el formulario de reservas (debes crear un controlador para esto)
-Route::post('/reservations/guardar', [App\Http\Controllers\ReservationController::class, 'store'])->name('reservations.guardar');
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
 
-// Ruta para login 
-Route::get('/admin/login', function () {
-    return view('admin.login');
-})->name('admin.login');
-
-Route::post('/admin/login', [App\Http\Controllers\Admin\LoginController::class, 'authenticate'])->name('admin.login.submit');
+require __DIR__.'/auth.php';
