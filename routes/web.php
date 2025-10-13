@@ -10,9 +10,9 @@ Route::get('/', function () {
 });
 
 // Ruta para mostrar el formulario de reservas
-Route::get('/reservations', function () {
-    return view('reservations');
-})->name('reservations');
+//Route::get('/reservas', function () {
+//return view('reservas');
+//})->name('reservas');
 
 // Ruta para procesar el formulario de reservas (debes crear un controlador para esto)
 //Route::post('/reservations/guardar', [App\Http\Controllers\ReservationController::class, 'store'])->name('reservations.guardar');
@@ -31,10 +31,11 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 
 
+
 // Rutas públicas
-Route::get('/reservar/{instalacion}', [ReservaController::class, 'create'])->name('reservas.create');
-Route::post('/reservar', [ReservaController::class, 'store'])->name('reservas.store');
-Route::get('/reserva/confirmacion/{id}', [ReservaController::class, 'confirmacion'])->name('reservas.confirmacion');
+Route::get('/reservas/{instalacion?}', [ReservaController::class, 'create'])->name('reservas.create');
+Route::post('/reservas', [ReservaController::class, 'store'])->name('reservas.store');
+Route::get('/reservas/confirmacion/{id}', [ReservaController::class, 'confirmacion'])->name('reservas.confirmacion');
 Route::post('/api/verificar-disponibilidad', [ReservaController::class, 'verificarDisponibilidad'])->name('reservas.verificar');
 
 // Rutas admin (proteger con middleware auth)

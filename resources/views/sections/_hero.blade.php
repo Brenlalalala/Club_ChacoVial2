@@ -4,8 +4,9 @@
         <p class="text-lg md:text-2xl font-light mb-8 max-w-2xl">
             Tu espacio para el deporte, la recreación y la comunidad.
         </p>
-        <a href="{{ route('reservations') }}" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">
-            ¡Reservar!
-        </a>
+        
+       <a href="{{ route('reservas.create') }}" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105 cursor-pointer">
+    ¡Reservar!
+</a>
     </div>
 </section>
