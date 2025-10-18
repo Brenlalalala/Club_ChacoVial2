@@ -55,33 +55,43 @@ class ReservaController extends Controller
 
         $instalacion = Instalacion::findOrFail($validated['instalacion_id']);
 
-        // Aquí iría la lógica para verificar disponibilidad.
-        // Ejemplo: if (!$instalacion->estaDisponible($validated['fecha_inicio'], $validated['fecha_fin'])) { ... }
+        // Verificar disponibilidad
+        if (!$instalacion->estaDisponible($validated['fecha_inicio'], $validated['fecha_fin'])) {
+            return back()
+                ->withErrors(['fecha_inicio' => 'La instalación no está disponible en ese horario. Por favor, elige otro horario.'])
+                ->withInput();
+        }
 
+        // Crear la reserva
         $reserva = new Reserva($validated);
-        $reserva->estado = 'pendiente'; // Estado inicial
+        $reserva->fecha_reserva = now()->toDateString();
+        $reserva->estado = 'pendiente';
+        $reserva->calcularPrecio();
         $reserva->save();
 
-        // Aquí iría la lógica para notificar al admin por email.
-        
+        // Notificar al admin (configura ADMIN_EMAIL en tu .env)
+        try {
+            if (config('mail.admin_email')) {
+                // Mail::to(config('mail.admin_email'))->send(new NuevaReservaSolicitud($reserva));
+            }
+        } catch (\Exception $e) {
+            // Log del error pero no interrumpir el flujo
+            \Log::error('Error al enviar email de nueva reserva: ' . $e->getMessage());
+        }
+
         return redirect()
             ->route('reservas.confirmacion', $reserva->id)
             ->with('success', '¡Reserva solicitada correctamente! Recibirás un email cuando sea confirmada.');
     }
 
-    /**
-     * Muestra la página de confirmación de la solicitud de reserva.
-     */
+    // Página de confirmación
     public function confirmacion($id)
     {
         $reserva = Reserva::with('instalacion')->findOrFail($id);
-        // Asegúrate de tener una vista llamada `reservas/confirmacion.blade.php` o similar.
         return view('reservas.confirmacion', compact('reserva'));
     }
 
-    /**
-     * Endpoint API para verificar disponibilidad de una instalación.
-     */
+    // API para verificar disponibilidad (AJAX)
     public function verificarDisponibilidad(Request $request)
     {
         $validated = $request->validate([
@@ -91,9 +101,7 @@ class ReservaController extends Controller
         ]);
 
         $instalacion = Instalacion::find($validated['instalacion_id']);
-        // Aquí necesitarías un método en tu modelo Instalacion para comprobar el horario.
-        // $disponible = $instalacion->estaDisponible($validated['fecha_inicio'], $validated['fecha_fin']);
-        $disponible = true; // Placeholder
+        $disponible = $instalacion->estaDisponible($validated['fecha_inicio'], $validated['fecha_fin']);
 
         return response()->json([
             'disponible' => $disponible,
