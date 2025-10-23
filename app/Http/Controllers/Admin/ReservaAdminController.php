@@ -9,24 +9,29 @@ use Illuminate\Http\Request;
 class ReservaAdminController extends Controller
 {
     // Listar todas las reservas
-    public function index(Request $request)
-    {
-        $query = Reserva::with('instalacion')->latest();
+   public function index(Request $request)
+{
+    $query = Reserva::with('instalacion')->latest();
 
-        // Filtrar por estado
-        if ($request->has('estado') && $request->estado != '') {
-            $query->where('estado', $request->estado);
-        }
-
-        // Filtrar por fecha
-        if ($request->has('fecha') && $request->fecha != '') {
-            $query->whereDate('fecha_reserva', $request->fecha);
-        }
-
-        $reservas = $query->paginate(15);
-
-        return view('admin.reservas.index', compact('reservas'));
+    // Filtrar por estado
+    if ($request->has('estado') && $request->estado != '') {
+        $query->where('estado', $request->estado);
     }
+
+    // Filtrar por fecha
+    if ($request->has('fecha') && $request->fecha != '') {
+        $query->whereDate('fecha_reserva', $request->fecha);
+    }
+
+    // Filtrar por instalación
+    if ($request->has('instalacion') && $request->instalacion != '') {
+        $query->where('instalacion_id', $request->instalacion);
+    }
+
+    $reservas = $query->paginate(15)->appends($request->all());
+
+    return view('admin.reservas.index', compact('reservas'));
+}
 
     // Ver detalle de una reserva
     public function show($id)
@@ -46,7 +51,8 @@ class ReservaAdminController extends Controller
 
         $reserva->confirmar();
 
-        return back()->with('success', 'Reserva confirmada y email enviado al cliente.');
+        return redirect()->route('admin.reservas.show', $reserva->id)
+                        ->with('success', 'Reserva confirmada exitosamente. Email enviado al cliente.');
     }
 
     // Cancelar reserva
@@ -60,7 +66,8 @@ class ReservaAdminController extends Controller
 
         $reserva->cancelar($request->motivo);
 
-        return back()->with('success', 'Reserva cancelada y email enviado al cliente.');
+        return redirect()->route('admin.reservas.show', $reserva->id)
+                        ->with('success', 'Reserva cancelada. Email enviado al cliente.');
     }
 
     // Editar reserva (cambiar fechas, precio, etc.)
@@ -70,9 +77,18 @@ class ReservaAdminController extends Controller
         return view('admin.reservas.edit', compact('reserva'));
     }
 
+    // Actualizar reserva
     public function update(Request $request, $id)
     {
         $reserva = Reserva::findOrFail($id);
+
+       
+    if ($request->has('fecha') && $request->has('hora_inicio') && $request->has('hora_fin')) {
+        $request->merge([
+            'fecha_inicio' => $request->fecha . ' ' . $request->hora_inicio . ':00',
+            'fecha_fin' => $request->fecha . ' ' . $request->hora_fin . ':00',
+        ]);
+    }
 
         $validated = $request->validate([
             'fecha_inicio' => 'required|date',

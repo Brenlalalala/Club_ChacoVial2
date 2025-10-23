@@ -78,7 +78,7 @@ class Reserva extends Model
         $this->save();
         
         // Enviar email de confirmación
-        Mail::to($this->email_cliente)->send(new ReservaConfirmada($this));
+        //Mail::to($this->email_cliente)->send(new ReservaConfirmada($this));
         
         return $this;
     }
@@ -93,7 +93,7 @@ class Reserva extends Model
         $this->save();
         
         // Enviar email de cancelación
-        Mail::to($this->email_cliente)->send(new ReservaCancelada($this));
+        //Mail::to($this->email_cliente)->send(new ReservaCancelada($this));
         
         return $this;
     }

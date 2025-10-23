@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+// Define la estructura y comportamiento de una instalación
 class Instalacion extends Model
 {
     use HasFactory;
@@ -21,13 +22,14 @@ class Instalacion extends Model
         'activa'
     ];
 
+    // Conversión automática de tipos
     protected $casts = [
         'precio_hora' => 'decimal:2',
         'capacidad' => 'integer',
         'activa' => 'boolean',
     ];
 
-    // Relación con reservas
+    // Relación con reservas (una instalación tiene muchas reservas)
     public function reservas()
     {
         return $this->hasMany(Reserva::class, 'instalacion_id');
@@ -39,7 +41,7 @@ class Instalacion extends Model
         return $query->where('activa', true);
     }
 
-    // Verificar disponibilidad en un rango de fechas
+    //LÓGICA DE NEGOCIO: verificar disponibilidad
     public function estaDisponible($fechaInicio, $fechaFin)
     {
         return !$this->reservas()

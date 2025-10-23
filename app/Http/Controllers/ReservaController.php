@@ -9,17 +9,16 @@ use Illuminate\Support\Facades\Mail;
 
 class ReservaController extends Controller
 {
-    /**
-     * Muestra el formulario para crear una nueva reserva.
-     */
+    // Muestra el formulario para crear una nueva reserva.
+     
     public function create($instalacionId = null)
     {
         if ($instalacionId) {
-            // Caso 1: Se selecciona una instalación específica desde un botón.
+            // Caso 1: se selecciona una instalación específica desde un botón.
             $instalacion = Instalacion::where('activa', true)->findOrFail($instalacionId);
             return view('reservas.create', compact('instalacion'));
         } else {
-            // Caso 2: Se accede a la página general de reservas para elegir una.
+            // Caso 2: se accede a la página general de reservas para elegir una.
             $instalaciones = Instalacion::where('activa', true)->get();
             
             if ($instalaciones->isEmpty()) {
@@ -27,14 +26,12 @@ class ReservaController extends Controller
                 return redirect()->back()->with('error', 'No hay instalaciones disponibles en este momento.');
             }
             
-            // CORRECCIÓN: Apuntar a la nueva ubicación de la vista.
             return view('reservas.create', compact('instalaciones'));
         }
     }
 
-    /**
-     * Almacena una nueva solicitud de reserva en la base de datos.
-     */
+    //Almacena una nueva solicitud de reserva en la base de datos.
+     
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -69,7 +66,7 @@ class ReservaController extends Controller
         $reserva->calcularPrecio();
         $reserva->save();
 
-        // Notificar al admin (configura ADMIN_EMAIL en tu .env)
+        // Notificar al admin (configura ADMIN_EMAIL en el .env)
         try {
             if (config('mail.admin_email')) {
                 // Mail::to(config('mail.admin_email'))->send(new NuevaReservaSolicitud($reserva));
