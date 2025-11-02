@@ -77,8 +77,12 @@ class Reserva extends Model
         $this->estado = 'aceptada';
         $this->save();
         
-        // Enviar email de confirmación
-        //Mail::to($this->email_cliente)->send(new ReservaConfirmada($this));
+       // Enviar email de confirmación 
+       try {
+            Mail::to($this->email_cliente)->send(new ReservaConfirmada($this));
+        } catch (\Exception $e) {
+            \Log::error('Error al enviar email de confirmación: ' . $e->getMessage());
+        }
         
         return $this;
     }
@@ -92,8 +96,12 @@ class Reserva extends Model
         }
         $this->save();
         
-        // Enviar email de cancelación
-        //Mail::to($this->email_cliente)->send(new ReservaCancelada($this));
+         // Enviar email de cancelación
+        try {
+            Mail::to($this->email_cliente)->send(new ReservaCancelada($this));
+        } catch (\Exception $e) {
+            \Log::error('Error al enviar email de cancelación: ' . $e->getMessage());
+        }
         
         return $this;
     }

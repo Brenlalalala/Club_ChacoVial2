@@ -16,7 +16,7 @@
     <!-- Formulario principal -->
     <div class="lg:col-span-2">
         <div class="bg-white rounded-lg shadow-md p-6">
-            <form method="POST" action="{{ route('admin.instalaciones.store') }}">
+            <form method="POST" action="{{ route('admin.instalaciones.store') }}" enctype="multipart/form-data">
                 @csrf
 
                 <!-- Nombre -->
@@ -100,26 +100,41 @@
                     </div>
                 </div>
 
-                <!-- URL de imagen -->
+                <!-- Imagen -->
                 <div class="mb-6">
-                    <label for="imagen_url" class="block text-sm font-medium text-gray-700 mb-2">
-                        URL de Imagen (opcional)
+                    <label for="imagen" class="block text-sm font-medium text-gray-700 mb-2">
+                        Imagen de la Instalación
                     </label>
-                    <div class="relative">
-                        <input type="url" 
-                               name="imagen_url" 
-                               id="imagen_url" 
-                               value="{{ old('imagen_url') }}"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('imagen_url') border-red-500 @enderror"
-                               placeholder="https://ejemplo.com/imagen.jpg">
-                        <div class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-                            <i class="fas fa-image"></i>
-                        </div>
+                    
+                    <div class="flex items-center gap-4">
+                        <!-- Botón personalizado que abre el file input -->
+                        <label for="imagen" class="cursor-pointer bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-medium py-2 px-4 rounded-lg transition inline-flex items-center">
+                            <i class="fas fa-upload mr-2"></i>
+                            Seleccionar Imagen
+                        </label>
+                        
+                        <!-- Input real (oculto) -->
+                        <input type="file" 
+                               name="imagen" 
+                               id="imagen" 
+                               accept="image/*"
+                               class="hidden"
+                               onchange="previewImage(event)">
+                        
+                        <!-- Nombre del archivo seleccionado -->
+                        <span id="file-name" class="text-sm text-gray-600 italic">Ningún archivo seleccionado</span>
                     </div>
-                    @error('imagen_url')
+                    
+                    @error('imagen')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
-                    <p class="text-xs text-gray-500 mt-1">Ingresa la URL de una imagen externa o déjalo vacío</p>
+                    <p class="text-xs text-gray-500 mt-1">Formatos aceptados: JPG, PNG, GIF. Máximo 2MB.</p>
+                    
+                    <!-- Vista previa de imagen -->
+                    <div id="preview-container" class="hidden mt-4">
+                        <p class="text-sm font-medium text-gray-700 mb-2">Vista previa:</p>
+                        <img id="preview-image" src="" alt="Preview" class="w-full max-w-md h-48 object-cover rounded-lg border border-gray-300">
+                    </div>
                 </div>
 
                 <!-- Estado activa -->
@@ -234,12 +249,29 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('precio_3h').textContent = '$' + (precio * 3).toFixed(2);
         document.getElementById('precio_4h').textContent = '$' + (precio * 4).toFixed(2);
     }
-    
     precioInput.addEventListener('input', actualizarVistaPrecio);
     
     // Actualizar al cargar si hay valor
     actualizarVistaPrecio();
 });
+
+// Vista previa de imagen
+function previewImage(event) {
+    const reader = new FileReader();
+    const preview = document.getElementById('preview-image');
+    const container = document.getElementById('preview-container');
+    
+    reader.onload = function() {
+        preview.src = reader.result;
+        container.classList.remove('hidden');
+    };
+    
+    if (event.target.files[0]) {
+        reader.readAsDataURL(event.target.files[0]);
+    } else {
+        container.classList.add('hidden');
+    }
+}
 </script>
 @endpush
 @endsection

@@ -40,4 +40,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     Route::resource('instalaciones', InstalacionController::class);
     Route::post('/instalaciones/{id}/toggle', [InstalacionController::class, 'toggleActiva'])->name('instalaciones.toggle');
+     Route::delete('/instalaciones/{id}/imagen', [InstalacionController::class, 'eliminarImagen'])->name('instalaciones.eliminar-imagen');
+
+    Route::get('/reservas/export/excel', [ReservaAdminController::class, 'exportExcel'])->name('reservas.export.excel');
+    Route::get('/reservas/export/pdf', [ReservaAdminController::class, 'exportPdf'])->name('reservas.export.pdf');
+    Route::get('/reservas/{id}/comprobante', [ReservaAdminController::class, 'exportComprobante'])->name('reservas.comprobante');
 });

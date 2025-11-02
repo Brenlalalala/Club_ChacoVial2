@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
+
+
 <div class="container mx-auto p-4 md:p-8 mt-4 md:mt-20 max-w-4xl">
     <div class="text-center mb-10">
         <h1 class="text-4xl font-extrabold text-indigo-800 tracking-tight sm:text-5xl">Realizar una Reserva</h1>

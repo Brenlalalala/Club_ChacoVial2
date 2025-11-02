@@ -35,7 +35,9 @@
         <!-- Imagen -->
         @if($instalacion->imagen_url)
         <div class="bg-white rounded-lg shadow-md overflow-hidden">
-            <img src="{{ $instalacion->imagen_url }}" alt="{{ $instalacion->nombre }}" class="w-full h-64 object-cover">
+            <img src="{{ asset($instalacion->imagen_url) }}"
+                 alt="{{ $instalacion->nombre }}" 
+                 class="w-full h-64 object-cover">
         </div>
         @endif
 

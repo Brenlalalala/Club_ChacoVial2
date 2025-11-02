@@ -222,6 +222,12 @@
                     Imprimir
                 </button>
                 
+                <a href="{{ route('admin.reservas.comprobante', $reserva->id) }}" 
+                   class="block w-full bg-red-100 hover:bg-red-200 text-red-700 font-medium py-2 px-4 rounded-lg transition text-sm text-center">
+                    <i class="fas fa-file-pdf mr-2"></i>
+                    Descargar Comprobante PDF
+                </a>
+                
                 <a href="mailto:{{ $reserva->email_cliente }}?subject=Reserva #{{ $reserva->id }} - Club Chaco Vial" 
                    class="block w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition text-sm text-center">
                     <i class="fas fa-envelope mr-2"></i>

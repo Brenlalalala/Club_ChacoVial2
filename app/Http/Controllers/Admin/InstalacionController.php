@@ -5,23 +5,21 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Instalacion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 
 class InstalacionController extends Controller
 {
-    // Listar todas las instalaciones
     public function index()
     {
         $instalaciones = Instalacion::withCount('reservas')->paginate(10);
         return view('admin.instalaciones.index', compact('instalaciones'));
     }
 
-    // Mostrar formulario de crear
     public function create()
     {
         return view('admin.instalaciones.create');
     }
 
-    // Guardar nueva instalación
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -29,18 +27,36 @@ class InstalacionController extends Controller
             'descripcion' => 'nullable|string',
             'capacidad' => 'required|integer|min:1',
             'precio_hora' => 'required|numeric|min:0',
-            'imagen_url' => 'nullable|string|max:255',
+            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'activa' => 'boolean'
         ], [
             'nombre.required' => 'El nombre es obligatorio.',
             'capacidad.required' => 'La capacidad es obligatoria.',
-            'capacidad.min' => 'La capacidad debe ser al menos 1 persona.',
             'precio_hora.required' => 'El precio por hora es obligatorio.',
-            'precio_hora.min' => 'El precio debe ser mayor o igual a 0.',
+            'imagen.image' => 'El archivo debe ser una imagen.',
+            'imagen.mimes' => 'Solo se permiten imágenes JPG, PNG o GIF.',
+            'imagen.max' => 'La imagen no debe superar los 2MB.',
         ]);
 
-        // Por defecto activa = true si no se envía
         $validated['activa'] = $request->has('activa') ? true : false;
+
+        // Manejar subida de imagen
+        if ($request->hasFile('imagen')) {
+            // Crear directorio si no existe
+            $directorio = public_path('images/instalaciones');
+            if (!File::exists($directorio)) {
+                File::makeDirectory($directorio, 0755, true);
+            }
+            
+            // Generar nombre único
+            $nombreArchivo = time() . '_' . str_replace(' ', '_', $request->file('imagen')->getClientOriginalName());
+            
+            // Mover archivo
+            $request->file('imagen')->move($directorio, $nombreArchivo);
+            
+            // Guardar ruta relativa
+            $validated['imagen_url'] = 'images/instalaciones/' . $nombreArchivo;
+        }
 
         Instalacion::create($validated);
 
@@ -48,7 +64,6 @@ class InstalacionController extends Controller
                         ->with('success', 'Instalación creada correctamente.');
     }
 
-    // Ver detalle de una instalación
     public function show($id)
     {
         $instalacion = Instalacion::withCount('reservas')->findOrFail($id);
@@ -61,14 +76,12 @@ class InstalacionController extends Controller
         return view('admin.instalaciones.show', compact('instalacion', 'reservasRecientes'));
     }
 
-    // Mostrar formulario de editar
     public function edit($id)
     {
         $instalacion = Instalacion::findOrFail($id);
         return view('admin.instalaciones.edit', compact('instalacion'));
     }
 
-    // Actualizar instalación
     public function update(Request $request, $id)
     {
         $instalacion = Instalacion::findOrFail($id);
@@ -78,11 +91,34 @@ class InstalacionController extends Controller
             'descripcion' => 'nullable|string',
             'capacidad' => 'required|integer|min:1',
             'precio_hora' => 'required|numeric|min:0',
-            'imagen_url' => 'nullable|string|max:255',
+            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'activa' => 'boolean'
         ]);
 
         $validated['activa'] = $request->has('activa') ? true : false;
+
+        // Manejar nueva imagen
+        if ($request->hasFile('imagen')) {
+            // Eliminar imagen anterior si existe
+            if ($instalacion->imagen_url && File::exists(public_path($instalacion->imagen_url))) {
+                File::delete(public_path($instalacion->imagen_url));
+            }
+            
+            // Crear directorio si no existe
+            $directorio = public_path('images/instalaciones');
+            if (!File::exists($directorio)) {
+                File::makeDirectory($directorio, 0755, true);
+            }
+            
+            // Generar nombre único
+            $nombreArchivo = time() . '_' . str_replace(' ', '_', $request->file('imagen')->getClientOriginalName());
+            
+            // Mover archivo
+            $request->file('imagen')->move($directorio, $nombreArchivo);
+            
+            // Guardar ruta relativa
+            $validated['imagen_url'] = 'images/instalaciones/' . $nombreArchivo;
+        }
 
         $instalacion->update($validated);
 
@@ -90,16 +126,19 @@ class InstalacionController extends Controller
                         ->with('success', 'Instalación actualizada correctamente.');
     }
 
-    // Eliminar instalación
     public function destroy($id)
     {
         $instalacion = Instalacion::findOrFail($id);
         
-        // Verificar si tiene reservas
         $reservasCount = $instalacion->reservas()->count();
         
         if ($reservasCount > 0) {
-            return back()->withErrors(['error' => "No se puede eliminar esta instalación porque tiene {$reservasCount} reserva(s) asociada(s). Desactívala en su lugar."]);
+            return back()->withErrors(['error' => "No se puede eliminar esta instalación porque tiene {$reservasCount} reserva(s) asociada(s)."]);
+        }
+
+        // Eliminar imagen si existe
+        if ($instalacion->imagen_url && File::exists(public_path($instalacion->imagen_url))) {
+            File::delete(public_path($instalacion->imagen_url));
         }
 
         $instalacion->delete();
@@ -108,7 +147,6 @@ class InstalacionController extends Controller
                         ->with('success', 'Instalación eliminada correctamente.');
     }
 
-    // Toggle activar/desactivar
     public function toggleActiva($id)
     {
         $instalacion = Instalacion::findOrFail($id);
@@ -118,5 +156,20 @@ class InstalacionController extends Controller
         $estado = $instalacion->activa ? 'activada' : 'desactivada';
         
         return back()->with('success', "Instalación {$estado} correctamente.");
+    }
+
+    public function eliminarImagen($id)
+    {
+        $instalacion = Instalacion::findOrFail($id);
+
+        if ($instalacion->imagen_url && File::exists(public_path($instalacion->imagen_url))) {
+            File::delete(public_path($instalacion->imagen_url));
+            $instalacion->imagen_url = null;
+            $instalacion->save();
+            
+            return back()->with('success', 'Imagen eliminada correctamente.');
+        }
+
+        return back()->withErrors(['error' => 'No hay imagen para eliminar.']);
     }
 }

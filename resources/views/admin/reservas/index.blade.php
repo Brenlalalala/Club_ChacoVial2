@@ -64,9 +64,23 @@
             
             <!-- Acciones rápidas -->
             <div class="flex gap-2">
-                <button onclick="window.print()" class="text-gray-600 hover:text-gray-800 px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">
+                <!-- Exportar Excel -->
+                <a href="{{ route('admin.reservas.export.excel', request()->all()) }}" 
+                   class="text-green-600 hover:text-green-800 px-3 py-1 border border-green-300 rounded hover:bg-green-50 text-sm">
+                    <i class="fas fa-file-excel mr-1"></i>Excel
+                </a>
+                
+                <!-- Exportar PDF -->
+                <a href="{{ route('admin.reservas.export.pdf', request()->all()) }}" 
+                   class="text-red-600 hover:text-red-800 px-3 py-1 border border-red-300 rounded hover:bg-red-50 text-sm">
+                    <i class="fas fa-file-pdf mr-1"></i>PDF
+                </a>
+                
+                <!-- Imprimir -->
+                <button onclick="window.print()" class="text-gray-600 hover:text-gray-800 px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 text-sm">
                     <i class="fas fa-print mr-1"></i>Imprimir
                 </button>
+            </div></button>
             </div>
         </div>
     </div>

@@ -6,6 +6,7 @@ use App\Models\Instalacion;
 use App\Models\Reserva;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\NuevaReservaSolicitud;
 
 class ReservaController extends Controller
 {
@@ -66,20 +67,20 @@ class ReservaController extends Controller
         $reserva->calcularPrecio();
         $reserva->save();
 
-        // Notificar al admin (configura ADMIN_EMAIL en el .env)
-        try {
-            if (config('mail.admin_email')) {
-                // Mail::to(config('mail.admin_email'))->send(new NuevaReservaSolicitud($reserva));
-            }
-        } catch (\Exception $e) {
-            // Log del error pero no interrumpir el flujo
-            \Log::error('Error al enviar email de nueva reserva: ' . $e->getMessage());
+        // Notificar al admin (configurado ADMIN_EMAIL en el .env)
+          
+    try {
+        if (config('mail.from.address')) {
+            Mail::to(config('mail.from.address'))->send(new NuevaReservaSolicitud($reserva));
         }
-
-        return redirect()
-            ->route('reservas.confirmacion', $reserva->id)
-            ->with('success', '¡Reserva solicitada correctamente! Recibirás un email cuando sea confirmada.');
+    } catch (\Exception $e) {
+        \Log::error('Error al enviar email al admin: ' . $e->getMessage());
     }
+
+    return redirect()
+        ->route('reservas.confirmacion', $reserva->id)
+        ->with('success', '¡Reserva solicitada correctamente!');
+}
 
     // Página de confirmación
     public function confirmacion($id)

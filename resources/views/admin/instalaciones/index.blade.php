@@ -81,7 +81,9 @@
                     <!-- Imagen o placeholder -->
                     <div class="h-48 bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center">
                         @if($instalacion->imagen_url)
-                            <img src="{{ $instalacion->imagen_url }}" alt="{{ $instalacion->nombre }}" class="w-full h-full object-cover">
+                            <img src="{{ asset($instalacion->imagen_url) }}"
+                                 alt="{{ $instalacion->nombre }}" 
+                                 class="w-full h-full object-cover">
                         @else
                             <i class="fas fa-building text-white text-6xl"></i>
                         @endif

@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Reserva;
 use Illuminate\Http\Request;
+use App\Exports\ReservasExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReservaAdminController extends Controller
 {
@@ -101,5 +104,73 @@ class ReservaAdminController extends Controller
 
         return redirect()->route('admin.reservas.show', $reserva->id)
                         ->with('success', 'Reserva actualizada correctamente.');
+    }
+
+
+    //Exportar a Excel
+    public function exportExcel(Request $request)
+    {
+        $filters = [
+            'estado' => $request->get('estado'),
+            'fecha' => $request->get('fecha'),
+            'instalacion' => $request->get('instalacion'),
+        ];
+
+        $filename = 'reservas_' . date('Y-m-d_His') . '.xlsx';
+        
+        return Excel::download(new ReservasExport($filters), $filename);
+    }
+
+    //Exportar a PDF
+    public function exportPdf(Request $request)
+    {
+        $query = Reserva::with('instalacion')->latest();
+
+        $filtros = [];
+
+        // Aplicar filtros
+        if ($request->has('estado') && $request->estado != '') {
+            $query->where('estado', $request->estado);
+            $filtros['estado'] = $request->estado;
+        }
+
+        if ($request->has('fecha') && $request->fecha != '') {
+            $query->whereDate('fecha_reserva', $request->fecha);
+            $filtros['fecha'] = $request->fecha;
+        }
+
+        if ($request->has('instalacion') && $request->instalacion != '') {
+            $query->where('instalacion_id', $request->instalacion);
+            $filtros['instalacion'] = $request->instalacion;
+        }
+
+        $reservas = $query->get();
+
+        $pdf = Pdf::loadView('admin.reservas.pdf', [
+            'reservas' => $reservas,
+            'filtros' => $filtros
+        ]);
+
+        $pdf->setPaper('a4', 'landscape'); // Horizontal para más columnas
+
+        $filename = 'reservas_' . date('Y-m-d_His') . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    // Exportar una sola reserva a PDF (comprobante)
+    public function exportComprobante($id)
+    {
+        $reserva = Reserva::with('instalacion')->findOrFail($id);
+
+        $pdf = Pdf::loadView('admin.reservas.comprobante-pdf', [
+            'reserva' => $reserva
+        ]);
+
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'comprobante_reserva_' . str_pad($reserva->id, 6, '0', STR_PAD_LEFT) . '.pdf';
+
+        return $pdf->download($filename);
     }
 }
