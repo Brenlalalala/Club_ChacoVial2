@@ -10,14 +10,29 @@ use App\Mail\NuevaReservaSolicitud;
 
 class ReservaController extends Controller
 {
-    // Mostrar formulario de reserva
-    public function create($instalacionId)
+    // Muestra el formulario para crear una nueva reserva.
+     
+    public function create($instalacionId = null)
     {
-        $instalacion = Instalacion::activas()->findOrFail($instalacionId);
-        return view('reservas.create', compact('instalacion'));
+        if ($instalacionId) {
+            // Caso 1: se selecciona una instalación específica desde un botón.
+            $instalacion = Instalacion::where('activa', true)->findOrFail($instalacionId);
+            return view('reservas.create', compact('instalacion'));
+        } else {
+            // Caso 2: se accede a la página general de reservas para elegir una.
+            $instalaciones = Instalacion::where('activa', true)->get();
+            
+            if ($instalaciones->isEmpty()) {
+                // Redirige si no hay instalaciones disponibles.
+                return redirect()->back()->with('error', 'No hay instalaciones disponibles en este momento.');
+            }
+            
+            return view('reservas.create', compact('instalaciones'));
+        }
     }
 
-    // Procesar la reserva
+    //Almacena una nueva solicitud de reserva en la base de datos.
+     
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -28,14 +43,21 @@ class ReservaController extends Controller
             'fecha_inicio' => 'required|date|after:now',
             'fecha_fin' => 'required|date|after:fecha_inicio',
             'comentarios' => 'nullable|string|max:500'
+        ], [
+            'instalacion_id.required' => 'Debe seleccionar una instalación.',
+            'nombre_cliente.required' => 'El nombre es obligatorio.',
+            'email_cliente.required' => 'El email es obligatorio.',
+            'fecha_inicio.required' => 'Debe seleccionar fecha y hora de inicio.',
+            'fecha_fin.after' => 'La hora de fin debe ser posterior a la hora de inicio.',
         ]);
 
         $instalacion = Instalacion::findOrFail($validated['instalacion_id']);
 
         // Verificar disponibilidad
         if (!$instalacion->estaDisponible($validated['fecha_inicio'], $validated['fecha_fin'])) {
-            return back()->withErrors(['fecha_inicio' => 'La instalación no está disponible en ese horario.'])
-                        ->withInput();
+            return back()
+                ->withErrors(['fecha_inicio' => 'La instalación no está disponible en ese horario. Por favor, elige otro horario.'])
+                ->withInput();
         }
 
         // Crear la reserva
@@ -45,12 +67,20 @@ class ReservaController extends Controller
         $reserva->calcularPrecio();
         $reserva->save();
 
-        // Notificar al admin (puedes configurar el email del admin en .env)
-        Mail::to(config('mail.admin_email'))->send(new NuevaReservaSolicitud($reserva));
-
-        return redirect()->route('reservas.confirmacion', $reserva->id)
-                        ->with('success', 'Reserva solicitada correctamente. Recibirá un email de confirmación.');
+        // Notificar al admin (configurado ADMIN_EMAIL en el .env)
+          
+    try {
+        if (config('mail.from.address')) {
+            Mail::to(config('mail.from.address'))->send(new NuevaReservaSolicitud($reserva));
+        }
+    } catch (\Exception $e) {
+        \Log::error('Error al enviar email al admin: ' . $e->getMessage());
     }
+
+    return redirect()
+        ->route('reservas.confirmacion', $reserva->id)
+        ->with('success', '¡Reserva solicitada correctamente!');
+}
 
     // Página de confirmación
     public function confirmacion($id)
@@ -59,7 +89,7 @@ class ReservaController extends Controller
         return view('reservas.confirmacion', compact('reserva'));
     }
 
-    // API para verificar disponibilidad (para AJAX)
+    // API para verificar disponibilidad (AJAX)
     public function verificarDisponibilidad(Request $request)
     {
         $validated = $request->validate([
@@ -73,7 +103,9 @@ class ReservaController extends Controller
 
         return response()->json([
             'disponible' => $disponible,
-            'mensaje' => $disponible ? 'Horario disponible' : 'Horario no disponible'
+            'mensaje' => $disponible 
+                ? 'Horario disponible ✓' 
+                : 'Este horario ya está reservado. Por favor, elige otro horario.'
         ]);
     }
 }

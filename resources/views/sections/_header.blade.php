@@ -10,9 +10,9 @@
         </button>
 
         <ul id="menu" class="hidden md:flex flex-col md:flex-row md:space-x-6 text-lg font-medium w-full md:w-auto mt-4 md:mt-0">
-            <li><a href="#nosotros" class="hover:text-green-300 transition-colors block py-2 px-4 md:p-0">Nosotros</a></li>
-            <li><a href="#instalaciones" class="hover:text-green-300 transition-colors block py-2 px-4 md:p-0">Instalaciones</a></li>
-            <li><a href="#contacto" class="hover:text-green-300 transition-colors block py-2 px-4 md:p-0">Contacto</a></li>
+            <li><a href="{{ url('/#nosotros') }}" ...>Nosotros</a></li>
+            <li><a href="{{ url('/#instalaciones') }}" ...>Instalaciones</a></li>
+            <li><a href="{{ url('/#contacto') }}" ...>Contacto</a></li>
             <li>
                 <a href="{{ route('login') }}" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full shadow-md transition-colors block text-center mt-2 md:mt-0">
                     Iniciar Sesión
