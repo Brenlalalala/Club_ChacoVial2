@@ -14,7 +14,7 @@ Route::get('/reservations', function () {
     return view('reservations');
 })->name('reservations');
 
-// Ruta para procesar el formulario de reservas (debes crear un controlador para esto)
+// Ruta para procesar el formulario de reservas ( hay que crear un controlador para esto)
 //Route::post('/reservations/guardar', [App\Http\Controllers\ReservationController::class, 'store'])->name('reservations.guardar');
 
 
